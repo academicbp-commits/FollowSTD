@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ระบบติดตามเอกสารทางการศึกษา</title>
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Google Fonts: Prompt -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Prompt:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <style>
+        /* Apply Prompt font to the entire page */
+        body {
+            font-family: 'Prompt', sans-serif;
+        }
+        /* Custom styles for better aesthetics */
+        .gradient-bg {
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        }
+        .search-btn {
+            background: linear-gradient(to right, #4a90e2, #50e3c2);
+            transition: all 0.3s ease;
+        }
+        .search-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+        }
+        .swal2-title, .swal2-html-container {
+            font-family: 'Prompt', sans-serif !important;
+        }
+        .swal2-html-container hr {
+            margin-top: 0.75rem;
+            margin-bottom: 0.75rem;
+        }
+    </style>
+</head>
+<body class="gradient-bg min-h-screen flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white shadow-md">
+        <div class="container mx-auto px-6 py-3 flex justify-between items-center">
+            <!-- Left: Logo -->
+            <div class="flex items-center">
+                <img src="https://placehold.co/150x50/4A90E2/FFFFFF?text=School+Logo" alt="School Logo" class="h-10 md:h-12">
+            </div>
+            <!-- Right: Text -->
+            <div class="hidden md:block">
+                <span class="text-gray-700 text-lg font-semibold">งานทะเบียน - ฝ่ายวิชาการ</span>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="flex-grow container mx-auto px-6 py-8 md:py-16 flex flex-col items-center justify-center">
+        
+        <div class="text-center mb-8">
+            <img src="https://placehold.co/128x128/4A90E2/FFFFFF?text=Logo" alt="Center School Logo" id="centerLogo" class="mx-auto mb-4 rounded-full shadow-lg" style="width: 128px; height: 128px;">
+            <h1 class="text-2xl md:text-3xl font-bold text-gray-800">ระบบติดตามเอกสารทางการศึกษา</h1>
+            <p class="text-gray-500 mt-2">กรุณากรอกเลขประจำตัวนักเรียนเพื่อค้นหาสถานะคำร้อง</p>
+        </div>
+
+        <div class="w-full max-w-lg bg-white p-8 rounded-xl shadow-2xl">
+            <form id="searchForm">
+                <label for="studentId" class="block text-gray-700 text-sm font-bold mb-2">เลขประจำตัวนักเรียน</label>
+                <div class="flex flex-col sm:flex-row items-center gap-2">
+                    <input type="text" id="studentId" name="studentId" class="shadow appearance-none border rounded-lg w-full py-3 px-4 text-gray-700 leading-tight focus:outline-none focus:ring-2 focus:ring-blue-400" placeholder="เช่น 12345" required>
+                    <button type="submit" class="search-btn w-full sm:w-auto text-white font-bold py-3 px-6 rounded-lg focus:outline-none focus:shadow-outline whitespace-nowrap">
+                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-2" viewBox="0 0 20 20" fill="currentColor">
+                          <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                        </svg>
+                        ค้นหา
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white mt-8 py-4">
+        <div class="container mx-auto px-6 text-center text-gray-600">
+            &copy;copyright2025 BPVICHAKARN
+        </div>
+    </footer>
+
+    <script>
+        // --- START: CONFIGURATION ---
+        const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbwmvqlJa_fLfAK5L8VjvnWxIEtsh4gnW4talymOhd8P7WWhUcUrlWMSqmzHBDjYqpi_hg/exec'; 
+        // --- END: CONFIGURATION ---
+
+        const searchForm = document.getElementById('searchForm');
+        const studentIdInput = document.getElementById('studentId');
+
+        /**
+         * Returns styled HTML for a given status.
+         * @param {string} status The status text (e.g., 'อนุมัติ', 'รออนุมัติ', 'ไม่อนุมัติ').
+         * @returns {string} HTML string with color-coded status.
+         */
+        function getStatusHtml(status) {
+            if (!status) return '<span>-</span>';
+            const s = status.trim();
+            if (s === 'อนุมัติ') {
+                return `<span class="font-bold text-green-600">${s}</span>`;
+            } else if (s === 'รออนุมัติ') {
+                return `<span class="font-bold text-yellow-600">${s}</span>`;
+            } else if (s === 'ไม่อนุมัติ') {
+                return `<span class="font-bold text-red-600">${s}</span>`;
+            }
+            return `<span>${s}</span>`; // Fallback
+        }
+
+        /**
+         * Determines the note text based on approval statuses.
+         * @param {string} registrarStatus Status from the registrar.
+         * @param {string} directorStatus Status from the director.
+         * @returns {string} The appropriate note text.
+         */
+        function getNoteText(registrarStatus, directorStatus) {
+            const regStatus = registrarStatus ? registrarStatus.trim() : '';
+            const dirStatus = directorStatus ? directorStatus.trim() : '';
+
+            if (regStatus === 'อนุมัติ' && dirStatus === 'อนุมัติ') {
+                return 'นักเรียนสามารถมารับเอกสารได้ที่ห้องวิชาการ อาคาร 5 ชั้น 2 ห้อง 523';
+            } else {
+                return 'ยังไม่สามารถมารับเอกสารได้ ต้องรอการอนุมัติจากผู้อำนวยการโรงเรียน';
+            }
+        }
+
+        searchForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            const studentId = studentIdInput.value.trim();
+            if (!studentId) {
+                Swal.fire({ icon: 'warning', title: 'กรุณากรอกข้อมูล', text: 'โปรดป้อนเลขประจำตัวนักเรียนก่อนค้นหา', confirmButtonText: 'ตกลง' });
+                return;
+            }
+
+            if (!SCRIPT_URL) {
+                Swal.fire({ icon: 'error', title: 'การตั้งค่าไม่สมบูรณ์', html: 'กรุณาตั้งค่า <b>SCRIPT_URL</b> ในไฟล์โค้ด<br>ดูคำอธิบายการเชื่อมต่อสำหรับรายละเอียด', confirmButtonText: 'ตกลง' });
+                return;
+            }
+
+            Swal.fire({ title: 'กำลังค้นหาข้อมูล...', text: 'กรุณารอสักครู่', allowOutsideClick: false, didOpen: () => Swal.showLoading() });
+
+            try {
+                const response = await fetch(`${SCRIPT_URL}?id=${studentId}`);
+                const result = await response.json();
+
+                if (result.status === 'success') {
+                    const data = result.data;
+                    const noteText = getNoteText(data.registrarStatus, data.directorStatus);
+                    
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'พบข้อมูลคำร้อง',
+                        html: `
+                            <div class="text-left p-4 space-y-2">
+                                <p><strong>วันที่ขอคำร้อง:</strong> ${data.date}</p>
+                                <p><strong>ชื่อ - นามสกุล:</strong> ${data.name}</p>
+                                <p><strong>ชั้น:</strong> ${data.class}</p>
+                                <p><strong>ประเภทคำร้อง:</strong> ${data.type}</p>
+                                <hr>
+                                <p><strong>สถานะ (นายทะเบียน):</strong> ${getStatusHtml(data.registrarStatus)}</p>
+                                <p><strong>สถานะ (ผู้อำนวยการ):</strong> ${getStatusHtml(data.directorStatus)}</p>
+                                <hr>
+                                <p><strong>หมายเหตุ:</strong> <span class="font-semibold">${noteText}</span></p>
+                            </div>
+                        `,
+                        confirmButtonText: 'ปิด',
+                        showDenyButton: true,
+                        denyButtonText: `<svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline-block mr-1" viewBox="0 0 20 20" fill="currentColor"><path d="M4 2a2 2 0 00-2 2v12a2 2 0 002 2h12a2 2 0 002-2V4a2 2 0 00-2-2H4zm6 10a.75.75 0 01-.75.75H8.75a.75.75 0 010-1.5h1.5A.75.75 0 0110 12zm-2-4a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5A.75.75 0 018 8zm4 4a.75.75 0 01-.75.75h-.5a.75.75 0 010-1.5h.5a.75.75 0 01.75.75zM12 8a.75.75 0 01.75-.75h.5a.75.75 0 010 1.5h-.5A.75.75 0 0112 8z"></path></svg> ดาวน์โหลด PDF`,
+                        denyButtonColor: '#3085d6',
+                    }).then((popupResult) => {
+                        if (popupResult.isDenied) {
+                            if(data.pdfLink) {
+                                window.open(data.pdfLink, '_blank');
+                            } else {
+                                Swal.fire('ไม่พบไฟล์', 'ไม่มีลิงก์เอกสาร PDF สำหรับคำร้องนี้', 'warning');
+                            }
+                        }
+                    });
+                } else {
+                    Swal.fire({ icon: 'error', title: 'ไม่พบข้อมูล', text: `ไม่พบข้อมูลคำร้องสำหรับเลขประจำตัว ${studentId}`, confirmButtonText: 'ลองอีกครั้ง' });
+                }
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                Swal.fire({ icon: 'error', title: 'เกิดข้อผิดพลาด', text: 'ไม่สามารถเชื่อมต่อกับระบบได้ กรุณาลองใหม่อีกครั้ง', confirmButtonText: 'ตกลง' });
+            }
+        });
+    </script>
+
+</body>
+</html>
